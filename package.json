@@ -1,0 +1,22 @@
+{
+  "name": "suspendify",
+  "version": "0.0.0",
+  "description": "Suspend resume state machine",
+  "main": "index.js",
+  "devDependencies": {
+    "standard": "^17.1.2"
+  },
+  "scripts": {
+    "test": "standard"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/holepunchto/suspendify.git"
+  },
+  "author": "Holepunch Inc.",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/holepunchto/suspendify/issues"
+  },
+  "homepage": "https://github.com/holepunchto/suspendify"
+}
