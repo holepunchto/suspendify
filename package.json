@@ -1,6 +1,6 @@
 {
   "name": "suspendify",
-  "version": "0.0.0",
+  "version": "1.0.0",
   "description": "Suspend resume state machine",
   "main": "index.js",
   "devDependencies": {
