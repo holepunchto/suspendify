@@ -4,10 +4,11 @@
   "description": "Suspend resume state machine",
   "main": "index.js",
   "devDependencies": {
+    "brittle": "^3.16.3",
     "standard": "^17.1.2"
   },
   "scripts": {
-    "test": "standard"
+    "test": "npx standard && node test.js"
   },
   "repository": {
     "type": "git",
