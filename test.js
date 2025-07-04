@@ -130,3 +130,33 @@ test('interleaved suspend/resume calls', async (t) => {
   await delay(1000)
   t.pass(`suspend/resume calls (suspend: ${suspendCount}, resume: ${resumeCount})`)
 })
+
+test('resuspend extends linger time', async (t) => {
+  t.plan(2)
+
+  let suspendedAt = 0
+
+  const s = new Suspendify({
+    pollLinger () {
+      return 100
+    },
+    suspend () {
+      suspendedAt = Date.now()
+    }
+  })
+
+  const start = Date.now()
+
+  s.suspend(500)
+
+  setTimeout(() => {
+    s.resuspend(1500)
+  }, 200)
+
+  await delay(1800)
+
+  const elapsed = suspendedAt - start
+
+  t.ok(suspendedAt > 0, 'suspend was eventually called')
+  t.ok(elapsed >= 1400, `suspend occurred after updated linger (got ${elapsed}ms)`)
+})

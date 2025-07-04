@@ -131,4 +131,10 @@ module.exports = class Suspendify {
     this._interupt()
     return this.update()
   }
+
+  resuspend (linger = 0) {
+    this.suspendedTarget = true
+    this.linger = linger
+    return this.update()
+  }
 }
