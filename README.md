@@ -30,6 +30,27 @@ sus.suspend(30_000)
 // resume asap
 sus.resume()
 ```
+## API
+
+#### `sus.suspend(time)`
+
+#### `sus.resume()`
+
+#### `sus.resuspend(time)`
+
+#### `sus.resumedAt()`
+
+#### `sus.suspendedAt()`
+
+#### `sus.suspending`
+
+#### `sus.suspended`
+
+#### `sus.resuming`
+
+#### `sus.resumed`
+
+
 
 ## License
 
