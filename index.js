@@ -66,8 +66,9 @@ module.exports = class Suspendify {
 
     const then = Date.now()
 
-    let ms = 50
+    let ms = Math.min(1000, this.linger)
     let elapsed = 0
+    let firstCall = true
 
     while (elapsed < this.linger) {
       if (!(await this._sleep(ms))) return false
@@ -76,6 +77,12 @@ module.exports = class Suspendify {
       if (!this.suspendedTarget || !remaining) break
 
       elapsed = Date.now() - then
+
+      if (firstCall) {
+        ms = 50
+        firstCall = false
+      }
+
       ms *= 2
       ms = Math.min(ms, remaining, this.linger - elapsed, 1000)
     }

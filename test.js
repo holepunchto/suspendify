@@ -71,13 +71,13 @@ test('suspend with linger and pollLinger', async (t) => {
   })
 
   const before = Date.now()
-  await s.suspend(300)
+  await s.suspend(2000)
   const elapsed = Date.now() - before
 
   t.ok(s.suspended, 'is suspended')
   t.is(suspendCalled, 1, 'suspend called once')
   t.ok(pollCalls > 1, 'pollLinger called multiple times')
-  t.ok(elapsed >= 300, `at least 300ms elapsed (got ${elapsed}ms)`)
+  t.ok(elapsed >= 2000, `at least 300ms elapsed (got ${elapsed}ms)`)
 })
 
 test('resume after suspend', async (t) => {
