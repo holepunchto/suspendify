@@ -66,7 +66,7 @@ module.exports = class Suspendify {
 
     const then = Date.now()
 
-    let ms = 1000
+    let ms = Math.min(1000, this.linger)
     let elapsed = 0
     let firstCall = true
 
