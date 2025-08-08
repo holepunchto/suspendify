@@ -64,18 +64,9 @@ module.exports = class Suspendify {
   }
 
   waitForResumed () {
-    return new Promise((resolve, reject) => {
-      const checkResumed = () => {
-        if (!this.resumed) {
-          return this._resumeSignal.wait()
-        } else {
-          clearInterval(intervalId)
-          resolve()
-        }
-      }
-
-      const intervalId = setInterval(checkResumed, 100)
-    })
+    if (!this.resumed) {
+      return this._resumeSignal.wait()
+    }
   }
 
   async _presuspend () {
@@ -138,7 +129,7 @@ module.exports = class Suspendify {
           await this._resume()
           this.resuming = false
         }
-
+        this._resumeSignal.notify()
         this.suspended = false
       }
     }
@@ -154,7 +145,6 @@ module.exports = class Suspendify {
     this.suspendedTarget = false
     this.linger = 0
     this._interupt()
-    this._resumeSignal.notify()
     return this.update()
   }
 

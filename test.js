@@ -166,7 +166,7 @@ test('waitForResumed resolves after resume', async (t) => {
 
   const s = new Suspendify({
     async resume () {
-      //
+      // golden silence
     }
   })
 
@@ -176,7 +176,6 @@ test('waitForResumed resolves after resume', async (t) => {
     await s.resume()
   }, 1000)
   await s.waitForResumed()
-
   t.is(s.resumed, true)
 
   t.ok(s.resumed, 'is resumed')
