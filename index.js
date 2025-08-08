@@ -60,6 +60,19 @@ module.exports = class Suspendify {
     return !this.suspended
   }
 
+  waitForResumed () {
+    return new Promise((resolve, reject) => {
+      const checkResumed = () => {
+        if (this.resumed) {
+          clearInterval(intervalId)
+          resolve()
+        }
+      }
+
+      const intervalId = setInterval(checkResumed, 100)
+    })
+  }
+
   async _presuspend () {
     if (!this.linger) return true
     if (!this._pollLinger) return await this._sleep(this.linger)
