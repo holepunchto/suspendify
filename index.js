@@ -67,6 +67,7 @@ module.exports = class Suspendify {
     if (!this.resumed) {
       return this._resumeSignal.wait()
     }
+    return Promise.resolve()
   }
 
   async _presuspend () {
