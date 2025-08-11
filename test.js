@@ -160,3 +160,23 @@ test('resuspend extends linger time', async (t) => {
   t.ok(suspendedAt > 0, 'suspend was eventually called')
   t.ok(elapsed >= 1400, `suspend occurred after updated linger (got ${elapsed}ms)`)
 })
+
+test('waitForResumed resolves after resume', async (t) => {
+  t.plan(2)
+
+  const s = new Suspendify({
+    async resume () {
+      // golden silence
+    }
+  })
+
+  await s.suspend()
+
+  setTimeout(async () => {
+    await s.resume()
+  }, 1000)
+  await s.waitForResumed()
+  t.is(s.resumed, true)
+
+  t.ok(s.resumed, 'is resumed')
+})

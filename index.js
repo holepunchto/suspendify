@@ -1,3 +1,5 @@
+const Signal = require('signal-promise')
+
 module.exports = class Suspendify {
   constructor (opts = {}) {
     const {
@@ -18,6 +20,7 @@ module.exports = class Suspendify {
 
     this.sleepResolve = null
     this.sleepTimeout = null
+    this._resumeSignal = new Signal()
 
     if (pollLinger) this._pollLinger = pollLinger
     if (suspend) this._suspend = suspend
@@ -58,6 +61,13 @@ module.exports = class Suspendify {
 
   get resumed () {
     return !this.suspended
+  }
+
+  waitForResumed () {
+    if (!this.resumed) {
+      return this._resumeSignal.wait()
+    }
+    return Promise.resolve()
   }
 
   async _presuspend () {
@@ -120,7 +130,7 @@ module.exports = class Suspendify {
           await this._resume()
           this.resuming = false
         }
-
+        this._resumeSignal.notify()
         this.suspended = false
       }
     }

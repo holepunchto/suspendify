@@ -19,5 +19,8 @@
   "bugs": {
     "url": "https://github.com/holepunchto/suspendify/issues"
   },
-  "homepage": "https://github.com/holepunchto/suspendify"
+  "homepage": "https://github.com/holepunchto/suspendify",
+  "dependencies": {
+    "signal-promise": "^1.0.3"
+  }
 }
