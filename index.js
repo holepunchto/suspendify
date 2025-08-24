@@ -14,6 +14,7 @@ module.exports = class Suspendify {
     this.suspended = false
     this.suspendedTarget = false
     this.linger = 0
+    this.resumes = 0
 
     this.suspendedAt = Date.now()
     this.resumedAt = Date.now()
@@ -64,16 +65,19 @@ module.exports = class Suspendify {
     return !this.suspended
   }
 
-  waitForResumed () {
-    if (!this.resumed) {
-      return this._resumeSignal.wait()
-    }
-    return Promise.resolve()
+  async waitForResumed () {
+    while (!this.resumed) await this._resumeSignal.wait()
   }
 
   async _presuspend () {
+    const resumes = this.resumes
+
     if (!this.linger) return true
-    if (!this._pollLinger) return await this._sleep(this.linger)
+
+    if (!this._pollLinger) {
+      await this._sleep(this.linger)
+      return this.resumes === resumes
+    }
 
     const then = Date.now()
 
@@ -82,10 +86,11 @@ module.exports = class Suspendify {
     let firstCall = true
 
     while (elapsed < this.linger) {
-      if (!(await this._sleep(ms))) return false
+      await this._sleep(ms)
+      if (this.resumes !== resumes) break
 
       const remaining = await this._pollLinger()
-      if (!this.suspendedTarget || !remaining) break
+      if (this.resumes !== resumes || !this.suspendedTarget || !remaining) break
 
       elapsed = Date.now() - then
 
@@ -98,7 +103,7 @@ module.exports = class Suspendify {
       ms = Math.min(ms, remaining, this.linger - elapsed, 1000)
     }
 
-    return this.suspendedTarget
+    return this.resumes === resumes
   }
 
   async update () {
@@ -116,27 +121,25 @@ module.exports = class Suspendify {
   async _update () {
     while (this.suspendedTarget !== this.suspended) {
       if (this.suspendedTarget) {
-        if (!this.suspending) {
-          this.suspending = true
-          if (!(await this._presuspend())) {
-            this.suspending = false
-            continue
-          }
+        this.suspending = true
+        try {
+          if (!(await this._presuspend())) continue
           await this._suspend()
-          this.suspendedAt = Date.now()
+        } finally {
           this.suspending = false
         }
-
+        this.suspendedAt = Date.now()
         this.suspended = true
       } else {
-        if (!this.resuming) {
-          this.resuming = true
+        this.resuming = true
+        try {
           this.resumedAt = Date.now()
           await this._resume()
+        } finally {
           this.resuming = false
         }
-        this._resumeSignal.notify()
         this.suspended = false
+        this._resumeSignal.notify()
       }
     }
   }
@@ -148,6 +151,7 @@ module.exports = class Suspendify {
   }
 
   resume () {
+    this.resumes++
     this.suspendedTarget = false
     this.linger = 0
     this._interupt()
