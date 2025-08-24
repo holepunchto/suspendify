@@ -8,7 +8,7 @@ module.exports = class Suspendify {
       suspend = null
     } = opts
 
-    this.updating = null
+    this.updating = false
     this.resuming = false
     this.suspending = false
     this.suspended = false
@@ -21,6 +21,7 @@ module.exports = class Suspendify {
     this.sleepResolve = null
     this.sleepTimeout = null
     this._resumeSignal = new Signal()
+    this._updatingSignal = new Signal()
 
     if (pollLinger) this._pollLinger = pollLinger
     if (suspend) this._suspend = suspend
@@ -101,11 +102,15 @@ module.exports = class Suspendify {
   }
 
   async update () {
-    while (this.updating) await this.updating
+    while (this.updating) await this._updatingSignal.wait()
     if (this.suspendedTarget === this.suspended) return
-    this.updating = this._update()
-    await this.updating
-    this.updating = null
+    this.updating = true
+    try {
+      await this._update()
+    } finally {
+      this.updating = false
+      this._updatingSignal.notify()
+    }
   }
 
   async _update () {
