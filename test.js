@@ -80,6 +80,36 @@ test('suspend with linger and pollLinger', async (t) => {
   t.ok(elapsed >= 2000, `at least 300ms elapsed (got ${elapsed}ms)`)
 })
 
+test('suspend with linger and pollLinger returning static twice', async (t) => {
+  t.plan(4)
+
+  let suspendCalled = 0
+  let pollCalls = 0
+  const s = new Suspendify({
+    pollLinger () {
+      pollCalls++
+      return 5_000
+    },
+    suspend () {
+      suspendCalled++
+    }
+  })
+
+  const before = Date.now()
+  s.suspend(5_000)
+
+  await new Promise(resolve => setTimeout(resolve, 1000))
+
+  s.resume()
+  await s.suspend(5_000)
+  const elapsed = Date.now() - before
+
+  t.ok(s.suspended, 'is suspended')
+  t.is(suspendCalled, 1, 'suspend called once')
+  t.ok(pollCalls > 1, `pollLinger called multiple times (${pollCalls} calls)`)
+  t.ok(elapsed >= 5500, `at least 5500ms elapsed (got ${elapsed}ms)`)
+})
+
 test('resume after suspend', async (t) => {
   t.plan(3)
 
