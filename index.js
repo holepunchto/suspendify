@@ -13,6 +13,7 @@ module.exports = class Suspendify {
     this.suspending = false
     this.suspended = false
     this.suspendedTarget = false
+    this.pollable = !!pollLinger
     this.linger = 0
     this.resumes = 0
 
@@ -74,7 +75,7 @@ module.exports = class Suspendify {
 
     if (!this.linger) return true
 
-    if (!this._pollLinger) {
+    if (!this.pollable) {
       await this._sleep(this.linger)
       return this.resumes === resumes
     }
