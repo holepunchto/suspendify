@@ -5,7 +5,8 @@ module.exports = class Suspendify {
     const {
       pollLinger = null,
       resume = null,
-      suspend = null
+      suspend = null,
+      suspendCancelled = null
     } = opts
 
     this.updating = false
@@ -27,6 +28,7 @@ module.exports = class Suspendify {
 
     if (pollLinger) this._pollLinger = pollLinger
     if (suspend) this._suspend = suspend
+    if (suspendCancelled) this._suspendCancelled = suspendCancelled
     if (resume) this._resume = resume
   }
 
@@ -55,6 +57,10 @@ module.exports = class Suspendify {
   }
 
   async _suspend () {
+    // do nothing
+  }
+
+  async _suspendCancelled () {
     // do nothing
   }
 
@@ -124,7 +130,10 @@ module.exports = class Suspendify {
       if (this.suspendedTarget) {
         this.suspending = true
         try {
-          if (!(await this._presuspend())) continue
+          if (!(await this._presuspend())) {
+            await this._suspendCancelled()
+            continue
+          }
           await this._suspend()
         } finally {
           this.suspending = false
