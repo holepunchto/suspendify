@@ -180,3 +180,35 @@ test('waitForResumed resolves after resume', async (t) => {
 
   t.ok(s.resumed, 'is resumed')
 })
+
+test('wakeup', async (t) => {
+  t.plan(2)
+
+  let suspendCount = 0
+  let resumeCount = 0
+  let wakeupCount = 0
+
+  const s = new Suspendify({
+    wakeupLinger: 200,
+    suspend () {
+      suspendCount++
+    },
+    resume () {
+      resumeCount++
+    },
+    wakeup () {
+      wakeupCount++
+    },
+    pollLinger () {
+      return 200
+    }
+  })
+
+  await s.suspend()
+
+  t.alike({ suspendCount, resumeCount, wakeupCount }, { suspendCount: 1, resumeCount: 0, wakeupCount: 0 })
+
+  await s.wakeup()
+
+  t.alike({ suspendCount, resumeCount, wakeupCount }, { suspendCount: 2, resumeCount: 0, wakeupCount: 1 })
+})

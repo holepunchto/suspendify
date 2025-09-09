@@ -139,7 +139,9 @@ module.exports = class Suspendify {
   async update () {
     while (this.updating) await this._updatingSignal.wait()
     if (this.target === this.actual) return
+
     this.updating = true
+
     try {
       await this._update()
     } finally {
@@ -153,6 +155,7 @@ module.exports = class Suspendify {
       switch (this.target) {
         case TARGET_SUSPEND: {
           this.suspending = true
+
           try {
             if (!(await this._presuspend())) {
               await this._suspendCancelled()
@@ -162,6 +165,7 @@ module.exports = class Suspendify {
           } finally {
             this.suspending = false
           }
+
           this.suspendedAt = Date.now()
           this.actual = TARGET_SUSPEND
           break
@@ -169,12 +173,14 @@ module.exports = class Suspendify {
 
         case TARGET_RESUME: {
           this.resuming = true
+
           try {
             this.resumedAt = Date.now()
             await this._resume()
           } finally {
             this.resuming = false
           }
+
           this.actual = TARGET_RESUME
           this._resumeSignal.notify()
           break
@@ -182,14 +188,19 @@ module.exports = class Suspendify {
 
         case TARGET_WAKEUP: {
           this.waking = true
+
           try {
             this.wokenAt = Date.now()
             await this._wakeup()
           } finally {
             this.waking = false
           }
+
+          this.actual = TARGET_WAKEUP
+
           if (this.target === TARGET_WAKEUP) {
-            this.suspend(this._wakeupLinger)
+            this.target = TARGET_SUSPEND
+            this.linger = this._wakeupLinger
           }
           break
         }
