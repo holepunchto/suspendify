@@ -4,9 +4,12 @@ const TARGET_RESUME = 0
 const TARGET_WAKEUP = 1
 const TARGET_SUSPEND = 2
 
+const DEFAULT_WAKEUP_LINGER = 3_000
+
 module.exports = class Suspendify {
   constructor (opts = {}) {
     const {
+      wakeupLinger = DEFAULT_WAKEUP_LINGER,
       pollLinger = null,
       resume = null,
       suspend = null,
@@ -35,6 +38,7 @@ module.exports = class Suspendify {
 
     this._resumeSignal = new Signal()
     this._updatingSignal = new Signal()
+    this._wakeupLinger = wakeupLinger
 
     if (pollLinger) this._pollLinger = pollLinger
     if (suspend) this._suspend = suspend
@@ -185,7 +189,7 @@ module.exports = class Suspendify {
             this.waking = false
           }
           if (this.target === TARGET_WAKEUP) {
-            this.suspend()
+            this.suspend(this._wakeupLinger)
           }
           break
         }
