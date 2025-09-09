@@ -1,28 +1,38 @@
 const Signal = require('signal-promise')
 
+const TARGET_RESUME = 0
+const TARGET_WAKEUP = 1
+const TARGET_SUSPEND = 2
+
 module.exports = class Suspendify {
   constructor (opts = {}) {
     const {
       pollLinger = null,
       resume = null,
       suspend = null,
-      suspendCancelled = null
+      suspendCancelled = null,
+      wakeup = null
     } = opts
+
+    this.target = TARGET_RESUME
+    this.actual = TARGET_RESUME
 
     this.updating = false
     this.resuming = false
+    this.waking = false
     this.suspending = false
-    this.suspended = false
-    this.suspendedTarget = false
+
     this.pollable = !!pollLinger
     this.linger = 0
     this.resumes = 0
 
     this.suspendedAt = Date.now()
     this.resumedAt = Date.now()
+    this.wokenAt = Date.now()
 
     this.sleepResolve = null
     this.sleepTimeout = null
+
     this._resumeSignal = new Signal()
     this._updatingSignal = new Signal()
 
@@ -30,6 +40,15 @@ module.exports = class Suspendify {
     if (suspend) this._suspend = suspend
     if (suspendCancelled) this._suspendCancelled = suspendCancelled
     if (resume) this._resume = resume
+    if (wakeup) this._wakeup = wakeup
+  }
+
+  get suspended () {
+    return this.actual === TARGET_SUSPEND
+  }
+
+  get resumed () {
+    return !this.suspended
   }
 
   _sleep (ms) {
@@ -68,8 +87,8 @@ module.exports = class Suspendify {
     // do nothing
   }
 
-  get resumed () {
-    return !this.suspended
+  async _wakeup () {
+    // do nothing
   }
 
   async waitForResumed () {
@@ -97,7 +116,7 @@ module.exports = class Suspendify {
       if (this.resumes !== resumes) break
 
       const remaining = await this._pollLinger()
-      if (this.resumes !== resumes || !this.suspendedTarget || !remaining) break
+      if (this.resumes !== resumes || this.target !== TARGET_SUSPEND || !remaining) break
 
       elapsed = Date.now() - then
 
@@ -115,7 +134,7 @@ module.exports = class Suspendify {
 
   async update () {
     while (this.updating) await this._updatingSignal.wait()
-    if (this.suspendedTarget === this.suspended) return
+    if (this.target === this.actual) return
     this.updating = true
     try {
       await this._update()
@@ -126,51 +145,74 @@ module.exports = class Suspendify {
   }
 
   async _update () {
-    while (this.suspendedTarget !== this.suspended) {
-      if (this.suspendedTarget) {
-        this.suspending = true
-        try {
-          if (!(await this._presuspend())) {
-            await this._suspendCancelled()
-            continue
+    while (this.target !== this.actual) {
+      switch (this.target) {
+        case TARGET_SUSPEND: {
+          this.suspending = true
+          try {
+            if (!(await this._presuspend())) {
+              await this._suspendCancelled()
+              break
+            }
+            await this._suspend()
+          } finally {
+            this.suspending = false
           }
-          await this._suspend()
-        } finally {
-          this.suspending = false
+          this.suspendedAt = Date.now()
+          this.actual = TARGET_SUSPEND
+          break
         }
-        this.suspendedAt = Date.now()
-        this.suspended = true
-      } else {
-        this.resuming = true
-        try {
-          this.resumedAt = Date.now()
-          await this._resume()
-        } finally {
-          this.resuming = false
+
+        case TARGET_RESUME: {
+          this.resuming = true
+          try {
+            this.resumedAt = Date.now()
+            await this._resume()
+          } finally {
+            this.resuming = false
+          }
+          this.actual = TARGET_RESUME
+          this._resumeSignal.notify()
+          break
         }
-        this.suspended = false
-        this._resumeSignal.notify()
+
+        case TARGET_WAKEUP: {
+          this.waking = true
+          try {
+            this.wokenAt = Date.now()
+            await this._wakeup()
+          } finally {
+            this.waking = false
+          }
+          if (this.target === TARGET_WAKEUP) {
+            this.suspend()
+          }
+          break
+        }
       }
     }
   }
 
   suspend (linger = 0) {
-    this.suspendedTarget = true
+    this.target = TARGET_SUSPEND
     this.linger = linger
     return this.update()
   }
 
   resume () {
+    this.target = TARGET_RESUME
     this.resumes++
-    this.suspendedTarget = false
     this.linger = 0
     this._interupt()
     return this.update()
   }
 
-  resuspend (linger = 0) {
-    this.suspendedTarget = true
-    this.linger = linger
+  wakeup () {
+    if (this.target !== TARGET_SUSPEND) return Promise.resolve()
+    this.target = TARGET_WAKEUP
+    this.resumes++
+    this.linger = 0
+    this._interupt()
     return this.update()
   }
 }
