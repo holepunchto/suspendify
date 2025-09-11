@@ -158,7 +158,7 @@ module.exports = class Suspendify {
 
           try {
             if (!(await this._presuspend())) {
-              await this._suspendCancelled()
+              await this._suspendCancelled(false)
               break
             }
             await this._suspend()
@@ -201,6 +201,8 @@ module.exports = class Suspendify {
           if (this.target === TARGET_WAKEUP) {
             this.target = TARGET_SUSPEND
             this.linger = this._wakeupLinger
+          } else {
+            await this._suspendCancelled(true)
           }
           break
         }
