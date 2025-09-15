@@ -224,6 +224,12 @@ module.exports = class Suspendify {
     return this.update()
   }
 
+  resuspend (linger = 0) {
+    this.target = TARGET_SUSPEND
+    this.linger = linger
+    return this.update()
+  }
+
   wakeup () {
     if (this.target !== TARGET_SUSPEND) return Promise.resolve()
     this.target = TARGET_WAKEUP
