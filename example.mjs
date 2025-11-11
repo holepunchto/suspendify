@@ -1,14 +1,14 @@
 import Suspendify from './index.js'
 
 const s = new Suspendify({
-  pollLinger () {
+  pollLinger() {
     console.log('poll', Date.now())
     return 30_000
   },
-  resume () {
+  resume() {
     console.log('resuming...')
   },
-  suspend () {
+  suspend() {
     console.log('suspending...')
   }
 })

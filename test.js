@@ -1,8 +1,8 @@
 const test = require('brittle')
 const Suspendify = require('./index.js')
 
-function delay (ms) {
-  return new Promise(resolve => setTimeout(resolve, ms))
+function delay(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms))
 }
 
 test('initial resume', async (t) => {
@@ -10,7 +10,7 @@ test('initial resume', async (t) => {
 
   let resumeCalled = 0
   const s = new Suspendify({
-    async resume () {
+    async resume() {
       resumeCalled++
     }
   })
@@ -27,7 +27,7 @@ test('do not resume when not suspended', async (t) => {
 
   let resumeCalled = 0
   const s = new Suspendify({
-    async resume () {
+    async resume() {
       resumeCalled++
     }
   })
@@ -43,7 +43,7 @@ test('call resume only once when suspended', async (t) => {
 
   let resumeCalled = 0
   const s = new Suspendify({
-    async resume () {
+    async resume() {
       resumeCalled++
     }
   })
@@ -61,11 +61,11 @@ test('suspend with linger and pollLinger', async (t) => {
   let suspendCalled = 0
   let pollCalls = 0
   const s = new Suspendify({
-    pollLinger () {
+    pollLinger() {
       pollCalls++
       return 100
     },
-    suspend () {
+    suspend() {
       suspendCalled++
     }
   })
@@ -86,11 +86,11 @@ test('suspend with linger and pollLinger returning static twice', async (t) => {
   let suspendCalled = 0
   let pollCalls = 0
   const s = new Suspendify({
-    pollLinger () {
+    pollLinger() {
       pollCalls++
       return 5_000
     },
-    suspend () {
+    suspend() {
       suspendCalled++
     }
   })
@@ -98,7 +98,7 @@ test('suspend with linger and pollLinger returning static twice', async (t) => {
   const before = Date.now()
   s.suspend(5_000)
 
-  await new Promise(resolve => setTimeout(resolve, 1000))
+  await new Promise((resolve) => setTimeout(resolve, 1000))
 
   s.resume()
   await s.suspend(5_000)
@@ -117,10 +117,10 @@ test('resume after suspend', async (t) => {
   let resumeCalled = 0
 
   const s = new Suspendify({
-    suspend () {
+    suspend() {
       suspendCalled++
     },
-    resume () {
+    resume() {
       resumeCalled++
     }
   })
@@ -140,13 +140,13 @@ test('interleaved suspend/resume calls', async (t) => {
   let resumeCount = 0
 
   const s = new Suspendify({
-    suspend () {
+    suspend() {
       suspendCount++
     },
-    resume () {
+    resume() {
       resumeCount++
     },
-    pollLinger () {
+    pollLinger() {
       return 200
     }
   })
@@ -165,7 +165,7 @@ test('waitForResumed resolves after resume', async (t) => {
   t.plan(2)
 
   const s = new Suspendify({
-    async resume () {
+    async resume() {
       // golden silence
     }
   })
@@ -190,25 +190,31 @@ test('wakeup', async (t) => {
 
   const s = new Suspendify({
     wakeupLinger: 200,
-    suspend () {
+    suspend() {
       suspendCount++
     },
-    resume () {
+    resume() {
       resumeCount++
     },
-    wakeup () {
+    wakeup() {
       wakeupCount++
     },
-    pollLinger () {
+    pollLinger() {
       return 200
     }
   })
 
   await s.suspend()
 
-  t.alike({ suspendCount, resumeCount, wakeupCount }, { suspendCount: 1, resumeCount: 0, wakeupCount: 0 })
+  t.alike(
+    { suspendCount, resumeCount, wakeupCount },
+    { suspendCount: 1, resumeCount: 0, wakeupCount: 0 }
+  )
 
   await s.wakeup()
 
-  t.alike({ suspendCount, resumeCount, wakeupCount }, { suspendCount: 2, resumeCount: 0, wakeupCount: 1 })
+  t.alike(
+    { suspendCount, resumeCount, wakeupCount },
+    { suspendCount: 2, resumeCount: 0, wakeupCount: 1 }
+  )
 })

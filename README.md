@@ -9,7 +9,7 @@ npm install suspendify
 
 ## Usage
 
-``` js
+```js
 const Suspendify = require('suspendify')
 
 const sus = new Suspendify({
@@ -30,6 +30,7 @@ sus.suspend(30_000)
 // resume asap
 sus.resume()
 ```
+
 ## API
 
 #### `sus.suspend(time)`
@@ -49,8 +50,6 @@ sus.resume()
 #### `sus.resuming`
 
 #### `sus.resumed`
-
-
 
 ## License
 
