@@ -133,6 +133,57 @@ test('resume after suspend', async (t) => {
   t.is(resumeCalled, 1, 'resume called once')
 })
 
+test('presuspend before suspend', async (t) => {
+  t.plan(2)
+
+  let suspendCalled = 0
+  let presuspendCalled = 0
+
+  const s = new Suspendify({
+    presuspend() {
+      presuspendCalled++
+    },
+    suspend() {
+      suspendCalled++
+    }
+  })
+
+  await s.suspend(0)
+
+  t.is(suspendCalled, 1, 'suspend called once')
+  t.is(presuspendCalled, 1, 'presuspend called once')
+})
+
+test('presuspend before suspend with linger', async (t) => {
+  t.plan(3)
+
+  let suspendCalled = 0
+  let presuspendCalled = 0
+
+  const s = new Suspendify({
+    presuspend() {
+      presuspendCalled++
+      return new Promise((resolve) => setTimeout(resolve, 1000))
+    },
+    suspend() {
+      suspendCalled++
+    }
+  })
+
+  const before = Date.now()
+  s.suspend(5_000)
+
+  await new Promise((resolve) => setTimeout(resolve, 1000))
+
+  s.resume()
+  await s.suspend(5_000)
+  const elapsed = Date.now() - before
+
+  t.ok(s.suspended, 'is suspended')
+  t.is(suspendCalled, 1, 'suspend called once')
+  t.ok(elapsed >= 6500, `at least 6500 elapsed (got ${elapsed}ms)`)
+})
+
 test('interleaved suspend/resume calls', async (t) => {
   t.plan(1)
 
