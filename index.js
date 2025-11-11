@@ -12,6 +12,7 @@ module.exports = class Suspendify {
       wakeupLinger = DEFAULT_WAKEUP_LINGER,
       pollLinger = null,
       resume = null,
+      presuspend = null,
       suspend = null,
       suspendCancelled = null,
       wakeup = null
@@ -45,6 +46,7 @@ module.exports = class Suspendify {
     if (suspendCancelled) this._suspendCancelled = suspendCancelled
     if (resume) this._resume = resume
     if (wakeup) this._wakeup = wakeup
+    if (presuspend) this._presuspend = presuspend
   }
 
   get suspended() {
@@ -79,6 +81,10 @@ module.exports = class Suspendify {
     return -1
   }
 
+  async _presuspend() {
+    // do nothing
+  }
+
   async _suspend() {
     // do nothing
   }
@@ -99,7 +105,7 @@ module.exports = class Suspendify {
     while (!this.resumed) await this._resumeSignal.wait()
   }
 
-  async _presuspend() {
+  async _doPresuspend() {
     const resumes = this.resumes
 
     if (!this.linger) return true
@@ -157,7 +163,8 @@ module.exports = class Suspendify {
           this.suspending = true
 
           try {
-            if (!(await this._presuspend())) {
+            await this._presuspend()
+            if (!(await this._doPresuspend())) {
               await this._suspendCancelled(false)
               break
             }
