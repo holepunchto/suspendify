@@ -164,7 +164,7 @@ module.exports = class Suspendify {
 
           try {
             await this._presuspend()
-            if (resumes === this.resumes && !(await this._doLinger(resumes))) {
+            if (resumes !== this.resumes || !(await this._doLinger(resumes))) {
               await this._suspendCancelled(false)
               break
             }
