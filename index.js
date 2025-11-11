@@ -156,14 +156,15 @@ module.exports = class Suspendify {
 
   async _update() {
     while (this.target !== this.actual) {
+      const resumes = this.resumes
+
       switch (this.target) {
         case TARGET_SUSPEND: {
           this.suspending = true
 
           try {
-            const resumes = this.resumes
             await this._presuspend()
-            if (!(await this._doLinger(resumes))) {
+            if (resumes === this.resumes && !(await this._doLinger(resumes))) {
               await this._suspendCancelled(false)
               break
             }
