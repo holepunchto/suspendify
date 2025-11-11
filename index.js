@@ -105,9 +105,7 @@ module.exports = class Suspendify {
     while (!this.resumed) await this._resumeSignal.wait()
   }
 
-  async _doPresuspend() {
-    const resumes = this.resumes
-
+  async _doLinger(resumes) {
     if (!this.linger) return true
 
     if (!this.pollable) {
@@ -163,8 +161,9 @@ module.exports = class Suspendify {
           this.suspending = true
 
           try {
+            const resumes = this.resumes
             await this._presuspend()
-            if (!(await this._doPresuspend())) {
+            if (!(await this._doLinger(resumes))) {
               await this._suspendCancelled(false)
               break
             }
