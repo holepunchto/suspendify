@@ -7,7 +7,7 @@ const TARGET_SUSPEND = 2
 const DEFAULT_WAKEUP_LINGER = 3_000
 
 module.exports = class Suspendify {
-  constructor (opts = {}) {
+  constructor(opts = {}) {
     const {
       wakeupLinger = DEFAULT_WAKEUP_LINGER,
       pollLinger = null,
@@ -47,16 +47,16 @@ module.exports = class Suspendify {
     if (wakeup) this._wakeup = wakeup
   }
 
-  get suspended () {
+  get suspended() {
     return this.actual === TARGET_SUSPEND
   }
 
-  get resumed () {
+  get resumed() {
     return !this.suspended
   }
 
-  _sleep (ms) {
-    return new Promise(resolve => {
+  _sleep(ms) {
+    return new Promise((resolve) => {
       this.sleepResolve = resolve
       this.sleepTimeout = setTimeout(() => {
         this.sleepResolve = null
@@ -66,7 +66,7 @@ module.exports = class Suspendify {
     })
   }
 
-  _interupt () {
+  _interupt() {
     if (!this.sleepTimeout) return
     clearTimeout(this.sleepTimeout)
     this.sleepTimeout = null
@@ -75,31 +75,31 @@ module.exports = class Suspendify {
     resolve(false)
   }
 
-  async _pollLinger () {
+  async _pollLinger() {
     return -1
   }
 
-  async _suspend () {
+  async _suspend() {
     // do nothing
   }
 
-  async _suspendCancelled () {
+  async _suspendCancelled() {
     // do nothing
   }
 
-  async _resume () {
+  async _resume() {
     // do nothing
   }
 
-  async _wakeup () {
+  async _wakeup() {
     // do nothing
   }
 
-  async waitForResumed () {
+  async waitForResumed() {
     while (!this.resumed) await this._resumeSignal.wait()
   }
 
-  async _presuspend () {
+  async _presuspend() {
     const resumes = this.resumes
 
     if (!this.linger) return true
@@ -136,7 +136,7 @@ module.exports = class Suspendify {
     return this.resumes === resumes
   }
 
-  async update () {
+  async update() {
     while (this.updating) await this._updatingSignal.wait()
     if (this.target === this.actual) return
 
@@ -150,7 +150,7 @@ module.exports = class Suspendify {
     }
   }
 
-  async _update () {
+  async _update() {
     while (this.target !== this.actual) {
       switch (this.target) {
         case TARGET_SUSPEND: {
@@ -210,13 +210,13 @@ module.exports = class Suspendify {
     }
   }
 
-  suspend (linger = 0) {
+  suspend(linger = 0) {
     this.target = TARGET_SUSPEND
     this.linger = linger
     return this.update()
   }
 
-  resume () {
+  resume() {
     this.target = TARGET_RESUME
     this.resumes++
     this.linger = 0
@@ -224,13 +224,13 @@ module.exports = class Suspendify {
     return this.update()
   }
 
-  resuspend (linger = 0) {
+  resuspend(linger = 0) {
     this.target = TARGET_SUSPEND
     this.linger = linger
     return this.update()
   }
 
-  wakeup () {
+  wakeup() {
     if (this.target !== TARGET_SUSPEND) return Promise.resolve()
     this.target = TARGET_WAKEUP
     this.resumes++
