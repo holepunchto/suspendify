@@ -155,9 +155,9 @@ module.exports = class Suspendify {
   }
 
   get interrupted() {
-    if (this.suspending) return this.target === TARGET_SUSPEND
-    if (this.resuming) return this.target === TARGET_RESUME
-    if (this.waking) return this.target === TARGET_WAKEUP
+    if (this.suspending) return this.target !== TARGET_SUSPEND
+    if (this.resuming) return this.target !== TARGET_RESUME
+    if (this.waking) return this.target !== TARGET_WAKEUP
     return false
   }
 
