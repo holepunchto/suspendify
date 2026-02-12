@@ -57,6 +57,10 @@ module.exports = class Suspendify {
     return !this.suspended
   }
 
+  get isBackgrounded() {
+    return this.suspended || this.suspending
+  }
+
   _sleep(ms) {
     return new Promise((resolve) => {
       this.sleepResolve = resolve
