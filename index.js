@@ -57,7 +57,7 @@ module.exports = class Suspendify {
     return !this.suspended
   }
 
-  get isBackgrounded() {
+  get backgrounded() {
     return this.suspended || this.suspending
   }
 
