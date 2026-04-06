@@ -117,8 +117,7 @@ Suspendify is a three-state machine with a `target` and `actual` state:
 ```
 
 - **target** is set synchronously by `suspend()`, `resume()`, or `wakeup()`.
-- **actual** transitions happen asynchronously inside the internal `_update()` loop.
-- Transitions are serialized — only one `_update()` runs at a time.
+- **actual** transitions happen asynchronously and are serialized — only one transition runs at a time.
 - During **linger**, the machine sleeps before calling the `suspend` hook. A `resume()` call during linger interrupts the sleep and cancels the suspend.
 
 ### Suspend transition order
